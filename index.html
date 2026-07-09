@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#143658">
+  <title>توثيق المحاضرة</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>توثيق المحاضرة</h1>
+    <p>تسجيل بداية ونهاية الجلسة مع الموقع، حتى عند ضعف الإنترنت.</p>
+  </header>
+
+  <main>
+    <section class="panel" id="activationPanel">
+      <h2>تفعيل جهاز التدريسي</h2>
+      <label>
+        اسم الحساب
+        <input id="teacherUserName" autocomplete="username" placeholder="مثال: dheyaa.admin">
+      </label>
+      <label>
+        اسم التدريسي
+        <input id="teacherFullName" autocomplete="name" placeholder="اكتب الاسم الكامل">
+      </label>
+      <button class="primary" id="activateButton">حفظ التفعيل</button>
+      <p class="hint">يفضل تفعيل الجهاز أول مرة بوجود إنترنت. بعدها يمكن استخدام الصفحة بدون إنترنت.</p>
+    </section>
+
+    <section class="panel hidden" id="scannerPanel">
+      <div class="teacher-card">
+        <div>
+          <span>الحساب</span>
+          <strong id="activeTeacherUserName"></strong>
+        </div>
+        <button id="resetActivationButton" class="ghost">تغيير الحساب</button>
+      </div>
+
+      <div class="button-grid">
+        <button class="success" id="scanStartButton">مسح كود البداية</button>
+        <button class="danger" id="scanEndButton">مسح كود النهاية</button>
+      </div>
+
+      <div id="cameraBox" class="camera-box hidden">
+        <video id="cameraPreview" playsinline muted></video>
+        <p id="cameraStatus">وجّه الكاميرا نحو رمز المحاضرة.</p>
+        <button class="ghost" id="stopCameraButton">إيقاف الكاميرا</button>
+      </div>
+
+      <div class="manual-box">
+        <label>
+          إدخال يدوي للكود عند تعذر المسح
+          <input id="manualCodeInput" placeholder="START-123456 أو END-123456">
+        </label>
+        <button class="primary" id="saveManualCodeButton">حفظ الكود</button>
+      </div>
+
+      <section class="records">
+        <div class="records-title">
+          <h2>السجلات غير المرفوعة</h2>
+          <button class="primary" id="syncButton">محاولة رفع البيانات</button>
+        </div>
+        <div id="recordsList" class="records-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="app.js"></script>
+</body>
+</html>

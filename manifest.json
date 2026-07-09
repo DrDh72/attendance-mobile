@@ -1,0 +1,12 @@
+{
+  "name": "توثيق محاضرات التدريسي",
+  "short_name": "توثيق",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "dir": "rtl",
+  "lang": "ar",
+  "background_color": "#f4f7fb",
+  "theme_color": "#143658",
+  "icons": []
+}
