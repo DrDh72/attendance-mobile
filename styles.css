@@ -90,6 +90,12 @@ button:disabled {
 .primary { background: var(--blue); }
 .success { background: var(--green); }
 .danger { background: var(--red); }
+.offline { background: var(--purple); }
+.wide { width: 100%; margin-bottom: 10px; }
+.method-panel { border: 1px solid var(--line); padding: 16px; margin-bottom: 18px; background: #f8fbff; }
+.offline-result { margin-top: 16px; padding: 16px; text-align: center; border: 2px solid var(--purple); background: #f7f1ff; }
+.offline-result span,.offline-result small { display:block; }
+.offline-result strong { display:block; font-size:36px; letter-spacing:5px; direction:ltr; color:var(--purple); margin:8px 0; }
 .ghost {
   background: #e8f1fa;
   color: var(--text);

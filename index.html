@@ -39,9 +39,17 @@
       </div>
 
       <div class="button-grid">
-        <button class="success" id="scanStartButton">مسح كود البداية</button>
-        <button class="danger" id="scanEndButton">مسح كود النهاية</button>
+        <button class="success" id="startActionButton">بدء الجلسة</button>
+        <button class="danger" id="endActionButton">إنهاء الجلسة</button>
       </div>
+
+      <section id="methodsPanel" class="method-panel hidden">
+        <h2 id="methodTitle">مصادقة الجلسة</h2>
+        <button class="success wide" id="scanCodeButton">1- المصادقة بالباركود</button>
+        <button class="primary wide" id="showManualButton">2- إدخال رمز شاشة التدريسي</button>
+        <button class="offline wide" id="showOfflineButton">3- مصادقة دون إنترنت وتصدير رمز</button>
+        <button class="ghost wide" id="backToActionsButton">رجوع</button>
+      </section>
 
       <div id="cameraBox" class="camera-box hidden">
         <video id="cameraPreview" playsinline muted></video>
@@ -49,12 +57,25 @@
         <button class="ghost" id="stopCameraButton">إيقاف الكاميرا</button>
       </div>
 
-      <div class="manual-box">
+      <div id="manualBox" class="manual-box hidden">
         <label>
-          إدخال يدوي للكود عند تعذر المسح
-          <input id="manualCodeInput" placeholder="START-123456 أو END-123456">
+          أدخل الأرقام الأربعة الظاهرة في شاشة التدريسي
+          <input id="manualCodeInput" inputmode="numeric" maxlength="4" placeholder="مثال: 4827">
         </label>
-        <button class="primary" id="saveManualCodeButton">حفظ الكود</button>
+        <button class="primary" id="saveManualCodeButton">إرسال المصادقة</button>
+      </div>
+
+      <div id="offlineBox" class="manual-box hidden">
+        <label>
+          أدخل رمز شاشة التدريسي
+          <input id="offlineChallengeInput" inputmode="numeric" maxlength="4" placeholder="أربعة أرقام">
+        </label>
+        <button class="offline" id="generateOfflineButton">تسجيل الموقع وتصدير رمز للشاشة</button>
+        <div id="offlineResult" class="offline-result hidden">
+          <span>أدخل الرمز التالي في برنامج التدريسي</span>
+          <strong id="offlineResponseCode"></strong>
+          <small>حُفظ الوقت والموقع في الهاتف وسيتم التحقق منهما عند المزامنة.</small>
+        </div>
       </div>
 
       <section class="records">

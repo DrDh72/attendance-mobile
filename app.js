@@ -11,14 +11,26 @@ const teacherFullName = document.getElementById("teacherFullName");
 const activeTeacherUserName = document.getElementById("activeTeacherUserName");
 const activateButton = document.getElementById("activateButton");
 const resetActivationButton = document.getElementById("resetActivationButton");
-const scanStartButton = document.getElementById("scanStartButton");
-const scanEndButton = document.getElementById("scanEndButton");
+const startActionButton = document.getElementById("startActionButton");
+const endActionButton = document.getElementById("endActionButton");
+const methodsPanel = document.getElementById("methodsPanel");
+const methodTitle = document.getElementById("methodTitle");
+const scanCodeButton = document.getElementById("scanCodeButton");
+const showManualButton = document.getElementById("showManualButton");
+const showOfflineButton = document.getElementById("showOfflineButton");
+const backToActionsButton = document.getElementById("backToActionsButton");
 const cameraBox = document.getElementById("cameraBox");
 const cameraPreview = document.getElementById("cameraPreview");
 const cameraStatus = document.getElementById("cameraStatus");
 const stopCameraButton = document.getElementById("stopCameraButton");
 const manualCodeInput = document.getElementById("manualCodeInput");
 const saveManualCodeButton = document.getElementById("saveManualCodeButton");
+const manualBox = document.getElementById("manualBox");
+const offlineBox = document.getElementById("offlineBox");
+const offlineChallengeInput = document.getElementById("offlineChallengeInput");
+const generateOfflineButton = document.getElementById("generateOfflineButton");
+const offlineResult = document.getElementById("offlineResult");
+const offlineResponseCode = document.getElementById("offlineResponseCode");
 const recordsList = document.getElementById("recordsList");
 const syncButton = document.getElementById("syncButton");
 const toast = document.getElementById("toast");
@@ -98,14 +110,13 @@ function formatLocation(location) {
 }
 
 function validateCode(code, expectedType) {
-  const normalized = code.trim().toUpperCase();
+  const entered = code.trim().toUpperCase();
   const prefix = expectedType === "START" ? "START-" : "END-";
-
-  if (!normalized.startsWith(prefix)) {
-    throw new Error(expectedType === "START" ? "هذا ليس كود بداية جلسة." : "هذا ليس كود نهاية جلسة.");
+  const digits = entered.startsWith(prefix) ? entered.substring(prefix.length) : entered;
+  if (!/^\d{4}$/.test(digits)) {
+    throw new Error("رمز شاشة التدريسي يجب أن يتكون من أربعة أرقام.");
   }
-
-  return normalized;
+  return `${prefix}${digits}`;
 }
 
 function getLocation() {
@@ -254,8 +265,18 @@ resetActivationButton.addEventListener("click", () => {
   render();
 });
 
-scanStartButton.addEventListener("click", () => startCamera("START"));
-scanEndButton.addEventListener("click", () => startCamera("END"));
+function selectAction(type) {
+  activeScanType = type;
+  methodTitle.textContent = type === "START" ? "طرق مصادقة بداية الجلسة" : "طرق مصادقة نهاية الجلسة";
+  methodsPanel.classList.remove("hidden"); manualBox.classList.add("hidden"); offlineBox.classList.add("hidden"); offlineResult.classList.add("hidden");
+  methodsPanel.scrollIntoView({ behavior: "smooth" });
+}
+startActionButton.addEventListener("click", () => selectAction("START"));
+endActionButton.addEventListener("click", () => selectAction("END"));
+scanCodeButton.addEventListener("click", () => startCamera(activeScanType));
+showManualButton.addEventListener("click", () => { manualBox.classList.remove("hidden"); offlineBox.classList.add("hidden"); });
+showOfflineButton.addEventListener("click", () => { offlineBox.classList.remove("hidden"); manualBox.classList.add("hidden"); });
+backToActionsButton.addEventListener("click", () => { stopCamera(); methodsPanel.classList.add("hidden"); manualBox.classList.add("hidden"); offlineBox.classList.add("hidden"); });
 stopCameraButton.addEventListener("click", stopCamera);
 
 saveManualCodeButton.addEventListener("click", () => {
@@ -265,9 +286,25 @@ saveManualCodeButton.addEventListener("click", () => {
     return;
   }
 
-  const type = code.toUpperCase().startsWith("END-") ? "END" : "START";
-  saveVerification(code, type);
+  saveVerification(code, activeScanType || "START");
   manualCodeInput.value = "";
+});
+
+generateOfflineButton.addEventListener("click", async () => {
+  const teacher = getTeacher(); const challenge = offlineChallengeInput.value.trim();
+  if (!teacher || !/^\d{4}$/.test(challenge)) { showToast("أدخل رمز شاشة التدريسي المكون من أربعة أرقام."); return; }
+  showToast("جار تسجيل الوقت والموقع...");
+  const location = await getLocation();
+  const response = String(Math.floor(10000000 + Math.random() * 90000000));
+  const type = activeScanType || "START"; const prefix = type === "START" ? "START-" : "END-";
+  const records = getRecords(); records.push({
+    id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+    teacherUserName: teacher.userName, teacherFullName: teacher.fullName, deviceId: teacher.deviceId,
+    type, code: `${prefix}${challenge}#${response}`, challengeCode: challenge, offlineResponse: response,
+    location, capturedAt: new Date().toISOString(), offline: true, synced: false
+  });
+  saveRecords(records); renderRecords(); offlineResponseCode.textContent = response; offlineResult.classList.remove("hidden");
+  showToast(location ? "تم إنشاء رمز Offline وحفظ الموقع." : "تم إنشاء الرمز، لكن تعذر التقاط الموقع.");
 });
 
 async function uploadRecord(record) {
