@@ -7,7 +7,7 @@ const verificationsEndpoint = `${supabaseUrl}/rest/v1/teacher_mobile_verificatio
 const activationPanel = document.getElementById("activationPanel");
 const scannerPanel = document.getElementById("scannerPanel");
 const teacherUserName = document.getElementById("teacherUserName");
-const teacherFullName = document.getElementById("teacherFullName");
+const teacherPassword = document.getElementById("teacherPassword");
 const activeTeacherUserName = document.getElementById("activeTeacherUserName");
 const activateButton = document.getElementById("activateButton");
 const resetActivationButton = document.getElementById("resetActivationButton");
@@ -240,21 +240,30 @@ function stopCamera() {
   cameraBox.classList.add("hidden");
 }
 
-activateButton.addEventListener("click", () => {
-  const userName = teacherUserName.value.trim();
-  const fullName = teacherFullName.value.trim();
+async function hashText(value) {
+  const bytes = new TextEncoder().encode(value);
+  if (!crypto.subtle) return btoa(value).slice(0, 32);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest)).map(x => x.toString(16).padStart(2, "0")).join("");
+}
 
-  if (!userName || !fullName) {
-    showToast("اكتب اسم الحساب واسم التدريسي.");
+activateButton.addEventListener("click", async () => {
+  const userName = teacherUserName.value.trim();
+  const password = teacherPassword.value;
+
+  if (!userName || !password) {
+    showToast("اكتب حساب التدريسي وكلمة المرور.");
     return;
   }
 
   saveTeacher({
     userName,
-    fullName,
+    fullName: userName,
+    passwordFingerprint: await hashText(password),
     deviceId: createDeviceId(),
     activatedAt: new Date().toISOString()
   });
+  teacherPassword.value = "";
 
   showToast("تم تفعيل الجهاز.");
   render();

@@ -12,6 +12,7 @@
   <header class="app-header">
     <h1>توثيق المحاضرة</h1>
     <p>تسجيل بداية ونهاية الجلسة مع الموقع، حتى عند ضعف الإنترنت.</p>
+    <small class="version">الإصدار 7 - المصادقة الثلاثية</small>
   </header>
 
   <main>
@@ -22,11 +23,11 @@
         <input id="teacherUserName" autocomplete="username" placeholder="مثال: dheyaa.admin">
       </label>
       <label>
-        اسم التدريسي
-        <input id="teacherFullName" autocomplete="name" placeholder="اكتب الاسم الكامل">
+        كلمة المرور
+        <input id="teacherPassword" type="password" autocomplete="current-password" placeholder="كلمة مرور حساب التدريسي">
       </label>
-      <button class="primary" id="activateButton">حفظ التفعيل</button>
-      <p class="hint">يفضل تفعيل الجهاز أول مرة بوجود إنترنت. بعدها يمكن استخدام الصفحة بدون إنترنت.</p>
+      <button class="primary" id="activateButton">دخول وتفعيل الهاتف</button>
+      <p class="hint">يحتاج التفعيل الأول إلى الإنترنت. لا تُحفظ كلمة المرور كنص، وبعد التفعيل تعمل الطريقة الثالثة دون إنترنت.</p>
     </section>
 
     <section class="panel hidden" id="scannerPanel">
