@@ -276,7 +276,7 @@ async function saveAttendance(rawCode, type) {
   const record = {
     id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
     teacherUserName: teacher.userName, teacherFullName: teacher.fullName, deviceId: teacher.deviceId,
-    type, code: `POINT-${point.token}`, pointName: point.name, pointNumber: point.number,
+    type, code: `${type}:POINT-${point.token}`, pointName: point.name, pointNumber: point.number,
     pointLatitude: point.latitude, pointLongitude: point.longitude, pointRadius: point.radius,
     distanceMeters: Math.round(distance), location, capturedAt: new Date().toISOString(), synced: false
   };
@@ -392,7 +392,7 @@ async function uploadRecord(record) {
     teacher_user_name: record.teacherUserName,
     teacher_full_name: record.teacherFullName,
     device_id: record.deviceId,
-    verification_type: record.type,
+    verification_type: record.type === "ATTENDANCE_IN" ? "START" : record.type === "ATTENDANCE_OUT" ? "END" : record.type,
     verification_code: record.code,
     captured_at: record.capturedAt,
     latitude: typeof location.latitude === "number" ? location.latitude : null,
