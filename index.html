@@ -4,15 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#143658">
-  <title>توثيق المحاضرة</title>
+  <title>بوابة التدريسي</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="app-header">
-    <h1>توثيق المحاضرة</h1>
-    <p>تسجيل بداية ونهاية الجلسة مع الموقع، حتى عند ضعف الإنترنت.</p>
-    <small class="version">الإصدار 7 - المصادقة الثلاثية</small>
+    <h1>بوابة التدريسي</h1>
+    <p>المحاضرات والحضور والانصراف من رابط واحد.</p>
+    <small class="version">الإصدار 8 - الحضور والانصراف</small>
   </header>
 
   <main>
@@ -39,10 +39,27 @@
         <button id="resetActivationButton" class="ghost">تغيير الحساب</button>
       </div>
 
-      <div class="button-grid">
+      <div class="portal-grid">
+        <button class="primary" id="lecturePortalButton">بدء المحاضرة</button>
+        <button class="ghost" id="infoPortalButton">معلوماتي</button>
+        <button class="ghost" id="messagesPortalButton">الرسائل والإشعارات</button>
+        <button class="offline" id="attendancePortalButton">الحضور والانصراف</button>
+      </div>
+
+      <div class="button-grid hidden" id="lectureActions">
         <button class="success" id="startActionButton">بدء الجلسة</button>
         <button class="danger" id="endActionButton">إنهاء الجلسة</button>
       </div>
+
+      <section class="method-panel hidden" id="attendancePanel">
+        <h2>تسجيل الحضور والانصراف</h2>
+        <p class="hint">تتطلب العملية اتصالاً بالإنترنت، وتشغيل الموقع، ومسح باركود موقع الكلية.</p>
+        <div class="button-grid">
+          <button class="success" id="attendanceInButton">تسجيل حضور</button>
+          <button class="danger" id="attendanceOutButton">تسجيل انصراف</button>
+        </div>
+        <button class="ghost wide" id="backFromAttendanceButton">رجوع</button>
+      </section>
 
       <section id="methodsPanel" class="method-panel hidden">
         <h2 id="methodTitle">مصادقة الجلسة</h2>

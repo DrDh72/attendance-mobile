@@ -132,6 +132,7 @@ button:disabled {
   gap: 12px;
   margin-bottom: 18px;
 }
+.portal-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:18px; }
 
 .camera-box {
   border: 1px solid var(--line);
@@ -201,6 +202,7 @@ video {
 
 @media (max-width: 520px) {
   .button-grid,
+  .portal-grid,
   .records-title {
     grid-template-columns: 1fr;
     display: grid;
