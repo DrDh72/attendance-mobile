@@ -194,13 +194,12 @@ async function saveVerification(code, type) {
 }
 
 async function startCamera(type, mode = "lecture") {
-  if (!("BarcodeDetector" in window)) {
-    showToast("المتصفح لا يدعم المسح المباشر. استخدم الإدخال اليدوي للكود.");
-    activeScanType = type;
+  activeScanType = type;
+  activeScanMode = mode;
+  if (!("BarcodeDetector" in window) && typeof window.jsQR !== "function") {
+    showToast(mode === "attendance" ? "تعذر تشغيل قارئ باركود الموقع. افتح الرابط في متصفح حديث." : "المتصفح لا يدعم المسح المباشر. استخدم الإدخال اليدوي للكود.");
     return;
   }
-
-  activeScanType = type;
   cameraBox.classList.remove("hidden");
   cameraStatus.textContent = "جار تشغيل الكاميرا...";
 
@@ -218,14 +217,25 @@ async function startCamera(type, mode = "lecture") {
 }
 
 async function scanLoop() {
-  const detector = new BarcodeDetector({ formats: ["qr_code"] });
+  const detector = "BarcodeDetector" in window ? new BarcodeDetector({ formats: ["qr_code"] }) : null;
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d", { willReadFrequently: true });
   cameraStatus.textContent = "وجّه الكاميرا نحو الكود.";
 
   scanTimer = window.setInterval(async () => {
     try {
-      const codes = await detector.detect(cameraPreview);
-      if (codes.length > 0) {
-        const code = codes[0].rawValue;
+      let code = "";
+      if (detector) {
+        const codes = await detector.detect(cameraPreview);
+        if (codes.length > 0) code = codes[0].rawValue;
+      } else if (cameraPreview.videoWidth > 0 && context) {
+        canvas.width = cameraPreview.videoWidth; canvas.height = cameraPreview.videoHeight;
+        context.drawImage(cameraPreview, 0, 0, canvas.width, canvas.height);
+        const image = context.getImageData(0, 0, canvas.width, canvas.height);
+        const result = window.jsQR(image.data, image.width, image.height, { inversionAttempts: "attemptBoth" });
+        if (result) code = result.data;
+      }
+      if (code) {
         stopCamera();
         if (activeScanMode === "attendance") await saveAttendance(code, activeScanType);
         else await saveVerification(code, activeScanType);
@@ -328,7 +338,7 @@ resetActivationButton.addEventListener("click", () => {
 
 function selectAction(type) {
   activeScanType = type;
-  activeScanMode = mode;
+  activeScanMode = "lecture";
   methodTitle.textContent = type === "START" ? "طرق مصادقة بداية الجلسة" : "طرق مصادقة نهاية الجلسة";
   methodsPanel.classList.remove("hidden"); manualBox.classList.add("hidden"); offlineBox.classList.add("hidden"); offlineResult.classList.add("hidden");
   methodsPanel.scrollIntoView({ behavior: "smooth" });
