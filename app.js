@@ -14,6 +14,10 @@ const resetActivationButton = document.getElementById("resetActivationButton");
 const lecturePortalButton = document.getElementById("lecturePortalButton");
 const infoPortalButton = document.getElementById("infoPortalButton");
 const messagesPortalButton = document.getElementById("messagesPortalButton");
+const messagesPanel = document.getElementById("messagesPanel");
+const researchReminders = document.getElementById("researchReminders");
+const refreshMessagesButton = document.getElementById("refreshMessagesButton");
+const backFromMessagesButton = document.getElementById("backFromMessagesButton");
 const attendancePortalButton = document.getElementById("attendancePortalButton");
 const lectureActions = document.getElementById("lectureActions");
 const attendancePanel = document.getElementById("attendancePanel");
@@ -348,7 +352,9 @@ endActionButton.addEventListener("click", () => selectAction("END"));
 lecturePortalButton.addEventListener("click", () => { lectureActions.classList.remove("hidden"); attendancePanel.classList.add("hidden"); });
 attendancePortalButton.addEventListener("click", () => { attendancePanel.classList.remove("hidden"); lectureActions.classList.add("hidden"); methodsPanel.classList.add("hidden"); });
 infoPortalButton.addEventListener("click", () => showToast("سيتم ربط صفحة معلومات التدريسي في المرحلة القادمة."));
-messagesPortalButton.addEventListener("click", () => showToast("سيتم ربط الرسائل والإشعارات في المرحلة القادمة."));
+messagesPortalButton.addEventListener("click", () => { messagesPanel.classList.remove("hidden"); attendancePanel.classList.add("hidden"); lectureActions.classList.add("hidden"); loadResearchReminders(); });
+refreshMessagesButton.addEventListener("click", loadResearchReminders);
+backFromMessagesButton.addEventListener("click", () => messagesPanel.classList.add("hidden"));
 attendanceInButton.addEventListener("click", () => startCamera("ATTENDANCE_IN", "attendance"));
 attendanceOutButton.addEventListener("click", () => startCamera("ATTENDANCE_OUT", "attendance"));
 backFromAttendanceButton.addEventListener("click", () => { stopCamera(); attendancePanel.classList.add("hidden"); });
@@ -416,6 +422,37 @@ async function uploadRecord(record) {
     const errorText = await response.text().catch(() => "");
     throw new Error(errorText || `HTTP ${response.status}`);
   }
+}
+
+function decodeReminderToken(token) {
+  const bytes = Uint8Array.from(atob(token), ch => ch.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
+async function loadResearchReminders() {
+  const teacher = getTeacher();
+  if (!teacher || !navigator.onLine) { researchReminders.innerHTML = '<p class="hint">يلزم اتصال بالإنترنت لعرض التذكيرات.</p>'; return; }
+  researchReminders.innerHTML = '<p class="hint">جار تحميل التذكيرات...</p>';
+  try {
+    const url = `${verificationsEndpoint}?select=id,verification_code,captured_at&teacher_user_name=eq.${encodeURIComponent(teacher.userName)}&verification_type=eq.RESEARCH_REMINDER&order=captured_at.desc`;
+    const response = await fetch(url, { headers: { "apikey": supabasePublishableKey, "Authorization": `Bearer ${supabasePublishableKey}` } });
+    if (!response.ok) throw new Error(await response.text());
+    const rows = await response.json(); const answered = JSON.parse(localStorage.getItem("teacherVerification.researchAnswers") || "{}");
+    const cards = rows.map(row => { try { const info=decodeReminderToken(row.verification_code); return {row,info}; } catch { return null; } }).filter(Boolean);
+    if (!cards.length) { researchReminders.innerHTML = '<p class="hint">لا توجد تذكيرات بحثية حالياً.</p>'; return; }
+    researchReminders.innerHTML = cards.map(({row,info}) => `<div class="reminder-card"><h3>${info.Title || "بحث"}</h3><p>اقترب موعد إنجاز مرحلة (${info.Stage}) الخاصة بالبحث، هل تم الإنجاز؟</p><small>الموعد: ${info.Due || "غير محدد"}</small>${answered[row.id] ? `<p><strong>تم تسجيل إجابتك: ${answered[row.id]}</strong></p>` : `<div class="reminder-actions"><button class="success" data-reminder="${row.id}" data-token="${row.verification_code}" data-answer="RESEARCH_DONE">تم الإنجاز</button><button class="danger" data-reminder="${row.id}" data-token="${row.verification_code}" data-answer="RESEARCH_PENDING">لم يتم الإنجاز</button></div>`}</div>`).join("");
+    researchReminders.querySelectorAll("[data-answer]").forEach(button => button.addEventListener("click", () => answerResearchReminder(button)));
+  } catch { researchReminders.innerHTML = '<p class="hint">تعذر تحميل التذكيرات. حاول مرة أخرى.</p>'; }
+}
+
+async function answerResearchReminder(button) {
+  const teacher=getTeacher(); if(!teacher)return; button.disabled=true;
+  const type=button.dataset.answer, reminderId=button.dataset.reminder, token=button.dataset.token;
+  try {
+    await uploadRecord({teacherUserName:teacher.userName,teacherFullName:teacher.fullName||teacher.userName,deviceId:teacher.deviceId,type,code:`${token}|${type === "RESEARCH_DONE" ? "DONE" : "PENDING"}`,capturedAt:new Date().toISOString(),location:null});
+    const answered=JSON.parse(localStorage.getItem("teacherVerification.researchAnswers")||"{}");answered[reminderId]=type==="RESEARCH_DONE"?"تم الإنجاز":"لم يتم الإنجاز";localStorage.setItem("teacherVerification.researchAnswers",JSON.stringify(answered));
+    showToast("تم تسجيل الإجابة وإرسالها إلى القسم.");loadResearchReminders();
+  } catch { button.disabled=false;showToast("تعذر إرسال الإجابة. تحقق من الإنترنت وحاول ثانية."); }
 }
 
 async function syncPendingRecords(showDoneMessage = true) {

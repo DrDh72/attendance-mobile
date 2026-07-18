@@ -1,4 +1,4 @@
-const CACHE_NAME = "teacher-verification-v10";
+const CACHE_NAME = "teacher-verification-v11";
 const APP_FILES = [
   "./",
   "./index.html",

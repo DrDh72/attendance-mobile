@@ -183,6 +183,10 @@ video {
   color: var(--muted);
   display: block;
 }
+.reminder-card { border:1px solid var(--line); padding:14px; margin-bottom:12px; background:#fbfdff; }
+.reminder-card h3 { margin:0 0 8px; color:var(--navy); }
+.reminder-card p { line-height:1.7; }
+.reminder-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 
 .toast {
   position: fixed;
